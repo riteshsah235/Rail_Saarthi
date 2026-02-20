@@ -139,28 +139,6 @@ uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 
 ---
 
-## Hackathon Presentation Tips
-
-1. **Demo flow**  
-   - Show a **critical** complaint (e.g. “Train delayed 10 hours, no water, safety risk”) → category + **high/critical** severity.  
-   - Show a **cleanliness** complaint → category cleanliness, appropriate severity.  
-   - Show **clustering** and **trends** to explain “recurring issues” and “prioritization”.
-
-2. **Emphasize deliverables**  
-   - Preprocessing: “We clean and tokenize text, remove stopwords, then TF-IDF.”  
-   - Classification: “Six categories as per problem statement, with Accuracy and F1.”  
-   - Clustering: “KMeans on TF-IDF; 2D PCA for visualization of recurring clusters.”  
-   - Severity: “ML + keyword rules to flag critical/high for urgent response.”  
-   - Dashboard: “Single responsive dashboard for submit, analyze, metrics, trends, and clusters.”
-
-3. **Scaling and data**  
-   - “Currently trained on sample data; the same pipeline can be retrained on real grievance portal data (email, web, Twitter) for production.”
-
-4. **Tech stack (one-liner)**  
-   - “FastAPI backend, scikit-learn for NLP and clustering, responsive frontend with Tailwind and Chart.js, all in a 12-hour scope.”
-
----
-
 ## API Summary
 
 | Method | Endpoint | Description |
