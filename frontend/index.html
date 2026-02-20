@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rail Saarthi | Complaint Intelligence - Indian Railways</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            rail: {
+              navy: '#0f172a',
+              blue: '#1e3a5f',
+              gold: '#d4a853',
+              red: '#b91c1c',
+              cream: '#fefce8',
+            }
+          },
+          fontFamily: {
+            sans: ['DM Sans', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    .gradient-head { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%); }
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.15); }
+    .severity-critical { background: #fef2f2; border-color: #b91c1c; color: #991b1b; }
+    .severity-high { background: #fff7ed; border-color: #ea580c; color: #c2410c; }
+    .severity-medium { background: #fffbeb; border-color: #d97706; color: #b45309; }
+    .severity-low { background: #f0fdf4; border-color: #16a34a; color: #15803d; }
+  </style>
+</head>
+<body class="bg-slate-50 text-rail-navy min-h-screen">
+  <!-- Header -->
+  <header class="gradient-head text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-rail-gold/20 flex items-center justify-center text-rail-gold font-bold text-xl">RS</div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Rail Saarthi</h1>
+            <p class="text-slate-300 text-xs sm:text-sm">Intelligent Complaint Categorization & Pattern Detection</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-slate-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" id="api-status-dot"></span>
+          <span id="api-status">Checking API...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+    <!-- Submit complaint -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 bg-rail-cream/30">
+        <h2 class="text-lg font-semibold text-rail-navy">Submit a complaint</h2>
+        <p class="text-sm text-slate-600">Enter passenger complaint text. AI will categorize and tag severity.</p>
+      </div>
+      <div class="p-6">
+        <textarea
+          id="complaint-input"
+          rows="4"
+          placeholder="e.g. Train was delayed by 6 hours. No announcement. Toilets were dirty and staff was rude."
+          class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-rail-blue/50 focus:border-rail-blue outline-none resize-none transition"
+        ></textarea>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <button
+            id="btn-analyze"
+            class="px-6 py-2.5 rounded-xl bg-rail-blue text-white font-medium hover:bg-rail-navy focus:ring-2 focus:ring-offset-2 focus:ring-rail-blue transition disabled:opacity-50"
+          >
+            Analyze complaint
+          </button>
+          <button
+            id="btn-clear"
+            class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
+          >
+            Clear
+          </button>
+        </div>
+        <div id="analyze-result" class="mt-4 hidden">
+          <div class="rounded-xl border border-slate-200 p-4 space-y-2">
+            <p class="text-sm font-medium text-slate-500">Result</p>
+            <p><span class="text-slate-600">Category:</span> <strong id="result-category" class="text-rail-navy"></strong></p>
+            <p><span class="text-slate-600">Severity:</span> <span id="result-severity" class="inline-block px-2 py-0.5 rounded-full text-sm font-medium"></span></p>
+            <p><span class="text-slate-600">Cluster:</span> <span id="result-cluster" class="font-mono text-sm"></span></p>
+          </div>
+        </div>
+        <div id="analyze-error" class="mt-4 hidden text-red-600 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- Metrics cards -->
+    <section>
+      <h2 class="text-lg font-semibold text-rail-navy mb-4">Model performance</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5 card-hover shadow-sm">
+          <p class="text-sm text-slate-500">Category accuracy</p>
+          <p class="text-2xl font-bold text-rail-blue mt-1" id="metric-cat-acc">—</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 card-hover shadow-sm">
+          <p class="text-sm text-slate-500">Category F1</p>
+          <p class="text-2xl font-bold text-rail-blue mt-1" id="metric-cat-f1">—</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 card-hover shadow-sm">
+          <p class="text-sm text-slate-500">Severity accuracy</p>
+          <p class="text-2xl font-bold text-rail-blue mt-1" id="metric-sev-acc">—</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 card-hover shadow-sm">
+          <p class="text-sm text-slate-500">Severity F1</p>
+          <p class="text-2xl font-bold text-rail-blue mt-1" id="metric-sev-f1">—</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trends: by category & severity -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100">
+          <h2 class="text-lg font-semibold text-rail-navy">Complaints by category</h2>
+        </div>
+        <div class="p-6">
+          <canvas id="chart-category" height="220"></canvas>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100">
+          <h2 class="text-lg font-semibold text-rail-navy">Complaints by severity</h2>
+        </div>
+        <div class="p-6">
+          <canvas id="chart-severity" height="220"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Clustering visualization -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h2 class="text-lg font-semibold text-rail-navy">Recurring issue clusters (2D view)</h2>
+        <p class="text-sm text-slate-600">Complaints grouped by similarity. Each point is a complaint; color = cluster.</p>
+      </div>
+      <div class="p-6">
+        <div class="rounded-xl border border-slate-200 bg-slate-50/50 min-h-[320px] flex items-center justify-center" id="cluster-viz-container">
+          <canvas id="chart-cluster" class="max-w-full"></canvas>
+          <p id="cluster-placeholder" class="text-slate-500">Loading clustering visualization...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories reference -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h2 class="text-lg font-semibold text-rail-navy">Complaint categories</h2>
+      </div>
+      <div class="p-6">
+        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm text-slate-600" id="categories-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 mt-12 py-6 text-center text-sm text-slate-500">
+    Rail Saarthi — AIML-03 Indian Railways Hackathon • Intelligent Complaint Categorization & Pattern Detection
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
