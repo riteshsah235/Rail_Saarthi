@@ -1,0 +1,20 @@
+# Rail Saarthi - Indian Railways Complaint Intelligence System
+# Backend & ML
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+pydantic==2.5.3
+
+# ML & NLP
+scikit-learn==1.4.0
+pandas==2.1.4
+numpy==1.26.3
+joblib==1.3.2
+nltk==3.8.1
+
+# Visualization & evaluation
+matplotlib==3.8.2
+seaborn==0.13.0
+
+# Optional: for richer text features
+# unidecode for transliteration
