@@ -1,21 +1,6 @@
 # Rail Saarthi — Intelligent Complaint Categorization & Pattern Detection
 
-**AIML-03 | Indian Railways Hackathon**
-
 An AI-driven system that processes textual passenger complaints to **automatically categorize** them, **detect recurring issue clusters**, **tag severity**, and **visualize trends** for faster prioritization and response by railway authorities.
-
----
-
-## Minimum Deliverables (12-Hour Scope) — Checklist
-
-| Deliverable | Status | Location |
-|-------------|--------|----------|
-| Text preprocessing pipeline | Done | `backend/preprocessing.py` |
-| Classification model | Done | `backend/train.py`, `backend/models/` |
-| Clustering visualization | Done | API: `/api/clustering-viz`, Dashboard: scatter chart |
-| Severity tagging system | Done | `backend/severity.py`, `/api/severity`, `/api/analyze` |
-| Interactive dashboard | Done | `frontend/index.html`, `frontend/js/app.js` |
-| Basic evaluation metrics (Accuracy / F1) | Done | `backend/train.py`, `/api/metrics`, Dashboard cards |
 
 ---
 
